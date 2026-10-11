@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block titulo %}Agregar libro | Biblioteca Escolar{% endblock %}
+
+{% block contenido %}
+
+<section class="formulario-contenedor">
+
+    <h1>Agregar nuevo libro</h1>
+    <p>Completa los datos para incorporar un libro al catálogo.</p>
+
+    <form method="POST" action="{{ url_for('agregar') }}">
+
+        <div class="campo">
+            <label for="titulo">Título del libro</label>
+            <input
+                type="text"
+                id="titulo"
+                name="titulo"
+                maxlength="150"
+                placeholder="Ej. El principito"
+                required>
+        </div>
+
+        <div class="campo">
+            <label for="autor">Autor</label>
+            <input
+                type="text"
+                id="autor"
+                name="autor"
+                maxlength="100"
+                placeholder="Ej. Antoine de Saint-Exupéry"
+                required>
+        </div>
+
+        <button type="submit" class="boton principal">
+            Guardar libro
+        </button>
+
+        <a href="{{ url_for('index') }}" class="boton secundario">
+            Cancelar
+        </a>
+
+    </form>
+
+</section>
+
+{% endblock %}
