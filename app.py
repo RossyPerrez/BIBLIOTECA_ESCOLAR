@@ -1,17 +1,46 @@
+import os
+from pathlib import Path
+
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from pathlib import Path
 
 app = Flask(__name__)
 
 # Configuración de la aplicación
-app.config["SECRET_KEY"] = "cambia-esta-clave-para-tu-proyecto"
-
-# Ruta de la base de datos SQLite
-BASE_DIR = Path(__file__).resolve().parent
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    f"sqlite:///{BASE_DIR / 'biblioteca.db'}"
+app.config["SECRET_KEY"] = os.getenv(
+    "SECRET_KEY",
+    "clave-local-solo-para-desarrollo"
 )
+
+# Ruta de la base de datos local
+BASE_DIR = Path(__file__).resolve().parent
+
+# Leer la dirección de PostgreSQL desde Render.
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    # Adaptar las direcciones de conexión de Render
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace(
+            "postgres://",
+            "postgresql+psycopg://",
+            1
+        )
+    elif DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace(
+            "postgresql://",
+            "postgresql+psycopg://",
+            1
+        )
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+
+else:
+    # Si no existe DATABASE_URL, usar SQLite local.
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        f"sqlite:///{BASE_DIR / 'biblioteca.db'}"
+    )
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
@@ -101,9 +130,13 @@ def eliminar(id):
     return redirect(url_for("index"))
 
 
-# Crear las tablas e iniciar la aplicación
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+# Crear las tablas e iniciar la aplicación local
 
+# Crear las tablas al iniciar la aplicación
+with app.app_context():
+    db.create_all()
+
+
+# Iniciar el servidor local
+if __name__ == "__main__":
     app.run(debug=True)
